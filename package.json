@@ -12,8 +12,10 @@
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.2.1",
+    "@vitest/coverage-v8": "^4.1.11",
     "typescript": "~5.7.2",
     "vite": "^6.0.5",
+    "vitest": "^4.1.11",
     "vue-tsc": "^2.2.0"
   }
 }

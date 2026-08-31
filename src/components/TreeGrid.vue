@@ -1,13 +1,27 @@
 <script setup lang="ts">
 import { AgGridVue } from 'ag-grid-vue3'
-import type { ColDef, GridOptions } from 'ag-grid-community'
+import type { ColDef, GridOptions, ValueGetterParams } from 'ag-grid-community'
 import type { TreeRow } from '../utils/buildRowData'
 
 defineProps<{
   rowData: TreeRow[]
 }>()
 
-const autoGroupColumnDef: ColDef = {
+const columnDefs: ColDef<TreeRow>[] = [
+  {
+    headerName: '№ п/п',
+    pinned: 'left',
+    width: 90,
+    valueGetter: (params: ValueGetterParams<TreeRow>) => (params.node?.rowIndex ?? 0) + 1,
+  },
+  {
+    headerName: 'Категория',
+    field: 'category',
+    width: 120,
+  },
+]
+
+const autoGroupColumnDef: ColDef<TreeRow> = {
   headerName: 'Наименование',
   field: 'label',
   flex: 1,
@@ -21,7 +35,8 @@ const gridOptions: GridOptions<TreeRow> = {
   getDataPath: (data) => data.path,
   groupDefaultExpanded: -1,
   animateRows: true,
-  autoGroupColumnDef,
+  columnDefs,
+  autoGroupColumnDef
 }
 </script>
 

@@ -1,6 +1,7 @@
 import { computed, ref, shallowRef } from 'vue'
 import { TreeStore } from '../tree-store'
 import type { TreeItem } from '../tree-store'
+import { buildRowData } from '../utils/buildRowData'
 
 const LOAD_DELAY_MS = 2000
 const ITEMS_URL = '/data/items.json'
@@ -19,6 +20,11 @@ export function useTreeData() {
         return store.value.getAll()
     })
 
+    const rowData = computed(() => {
+        version.value
+        return buildRowData(store.value)
+    })
+
     async function loadItems(): Promise<void> {
         loading.value = true
 
@@ -35,6 +41,7 @@ export function useTreeData() {
         store,
         loading,
         items,
-        loadItems,
+        rowData,
+        loadItems
     }
 }

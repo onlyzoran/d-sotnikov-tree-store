@@ -64,4 +64,26 @@ describe('TreeStore', () => {
         expect(store.getItem(9)?.label).toBe('Айтем 9')
         expect(store.getChildren(8).map((item) => item.id)).toEqual([9])
     })
+
+    it('removes item and its subtree', () => {
+        const store = new TreeStore(sampleItems)
+        store.removeItem('91064cef')
+        expect(store.getItem('91064cef')).toBeUndefined()
+        expect(store.getItem(4)).toBeUndefined()
+        expect(store.getItem(7)).toBeUndefined()
+        expect(store.getAll()).toHaveLength(2)
+    })
+
+    it('updates existing item', () => {
+        const store = new TreeStore(sampleItems)
+        store.updateItem({ id: 3, parent: 1, label: 'Updated' })
+        expect(store.getItem(3)?.label).toBe('Updated')
+    })
+
+    it('rebuilds indexes when parent changes on update', () => {
+        const store = new TreeStore(sampleItems)
+        store.updateItem({ id: 3, parent: 4, label: 'Moved' })
+        expect(store.getChildren(1).map((item) => item.id)).toEqual(['91064cef'])
+        expect(store.getChildren(4).map((item) => item.id).sort()).toEqual([3, 7, 8])
+    })
 })

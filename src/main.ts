@@ -5,6 +5,7 @@ import App from './App.vue'
 
 import 'ag-grid-community/styles/ag-grid.css'
 import 'ag-grid-community/styles/ag-theme-alpine.css'
+import './style.css'
 
 ModuleRegistry.registerModules([TreeDataModule])
 LicenseManager.setLicenseKey(

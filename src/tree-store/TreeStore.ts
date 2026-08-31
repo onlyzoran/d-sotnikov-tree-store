@@ -22,18 +22,10 @@ export class TreeStore {
     }
 
     getAllChildren(id: TreeItemId): TreeItem[] {
-        const result: TreeItem[] = []
-        const directChildren = this.getChildren(id)
+        const result = [...this.getChildren(id)]
 
-        for (let index = 0; index < directChildren.length; index += 1) {
-            result.push(directChildren[index])
-        }
-
-        for (let index = 0; index < result.length; index += 1) {
-            const nested = this.getChildren(result[index].id)
-            for (let nestedIndex = 0; nestedIndex < nested.length; nestedIndex += 1) {
-                result.push(nested[nestedIndex])
-            }
+        for (const item of result) {
+            result.push(...this.getChildren(item.id))
         }
 
         return result
@@ -68,9 +60,8 @@ export class TreeStore {
         }
 
         const idsToRemove = new Set<TreeItemId>([id])
-        const descendants = this.getAllChildren(id)
-        for (let index = 0; index < descendants.length; index += 1) {
-            idsToRemove.add(descendants[index].id)
+        for (const descendant of this.getAllChildren(id)) {
+            idsToRemove.add(descendant.id)
         }
 
         this.items = this.items.filter((item) => !idsToRemove.has(item.id))

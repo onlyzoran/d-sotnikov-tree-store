@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { AgGridVue } from 'ag-grid-vue3'
-import type { CellClassParams, ColDef, GridOptions, ValueGetterParams } from 'ag-grid-community'
+import type { CellClassParams, CellStyle, ColDef, GridOptions, ValueGetterParams } from 'ag-grid-community'
 import type { TreeRow } from '../utils/buildRowData'
 
 defineProps<{
@@ -8,8 +8,23 @@ defineProps<{
   loading: boolean
 }>()
 
+function isGroup(row: TreeRow | undefined): boolean {
+  return row?.category === 'Группа'
+}
+
 function groupRowClass(params: CellClassParams<TreeRow>): string {
-  return params.data?.category === 'Группа' ? 'tree-grid__group' : ''
+  return isGroup(params.data) ? 'tree-grid__group' : ''
+}
+
+function categoryCellStyle(params: CellClassParams<TreeRow>): CellStyle {
+  const level = Math.max(0, (params.data?.path.length ?? 1) - 1)
+  return { '--tree-level': String(level) }
+}
+
+const defaultColDef: ColDef<TreeRow> = {
+  sortable: false,
+  filter: false,
+  resizable: false,
 }
 
 const columnDefs: ColDef<TreeRow>[] = [
@@ -19,9 +34,6 @@ const columnDefs: ColDef<TreeRow>[] = [
     pinned: 'left',
     width: 88,
     maxWidth: 88,
-    sortable: false,
-    filter: false,
-    resizable: false,
     cellClass: 'tree-grid__row-number',
     valueGetter: (params: ValueGetterParams<TreeRow>) => (params.node?.rowIndex ?? 0) + 1,
   },
@@ -31,9 +43,6 @@ const columnDefs: ColDef<TreeRow>[] = [
     field: 'label',
     flex: 1,
     minWidth: 240,
-    sortable: false,
-    filter: false,
-    resizable: false,
     cellClass: groupRowClass,
   },
 ]
@@ -43,13 +52,11 @@ const autoGroupColumnDef: ColDef<TreeRow> = {
   field: 'category',
   width: 240,
   minWidth: 200,
-  sortable: false,
-  filter: false,
-  resizable: false,
   cellClass: groupRowClass,
+  cellStyle: categoryCellStyle,
   cellRendererParams: {
     suppressCount: true,
-  }
+  },
 }
 
 const gridOptions: GridOptions<TreeRow> = {
@@ -60,12 +67,10 @@ const gridOptions: GridOptions<TreeRow> = {
   animateRows: true,
   headerHeight: 40,
   rowHeight: 36,
-  defaultColDef: {
-    resizable: false,
-  },
+  defaultColDef,
   columnDefs,
   autoGroupColumnDef,
-  overlayLoadingTemplate: '<span class="ag-overlay-loading-center">Загрузка данных...</span>'
+  overlayLoadingTemplate: '<span class="ag-overlay-loading-center">Загрузка данных...</span>',
 }
 </script>
 
@@ -87,12 +92,10 @@ const gridOptions: GridOptions<TreeRow> = {
   --ag-header-column-resize-handle-display: none;
   --ag-cell-widget-spacing: 10px;
   --tree-text-indent: 18px;
+  --tree-gutter: calc(var(--ag-icon-size) + var(--ag-cell-widget-spacing));
 }
 
-:deep(.ag-header-cell-label) {
-  font-weight: 600;
-}
-
+:deep(.ag-header-cell-label),
 :deep(.tree-grid__row-number),
 :deep(.tree-grid__group),
 :deep(.tree-grid__group .ag-group-value) {
@@ -109,36 +112,24 @@ const gridOptions: GridOptions<TreeRow> = {
 
 :deep(.ag-cell[col-id='ag-Grid-AutoColumn'] .ag-cell-wrapper) {
   position: relative;
-  padding-left: calc(var(--ag-icon-size) + var(--ag-cell-widget-spacing)) !important;
+  padding-left: var(--tree-gutter) !important;
 }
 
-:deep(.ag-ltr .ag-group-expanded),
-:deep(.ag-ltr .ag-group-contracted) {
+:deep(.ag-group-expanded),
+:deep(.ag-group-contracted) {
   position: absolute;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  margin-right: 0;
+  inset: 0 auto 0 0;
+  display: flex;
+  align-items: center;
+  margin: 0;
 }
 
 :deep(.ag-ltr .ag-row-group-leaf-indent) {
   margin-left: 0;
 }
 
-:deep(.ag-row-level-1 [col-id='ag-Grid-AutoColumn'] .ag-group-value) {
-  padding-left: var(--tree-text-indent);
-}
-
-:deep(.ag-row-level-2 [col-id='ag-Grid-AutoColumn'] .ag-group-value) {
-  padding-left: calc(2 * var(--tree-text-indent));
-}
-
-:deep(.ag-row-level-3 [col-id='ag-Grid-AutoColumn'] .ag-group-value) {
-  padding-left: calc(3 * var(--tree-text-indent));
-}
-
-:deep(.ag-row-level-4 [col-id='ag-Grid-AutoColumn'] .ag-group-value) {
-  padding-left: calc(4 * var(--tree-text-indent));
+:deep(.ag-cell[col-id='ag-Grid-AutoColumn'] .ag-group-value) {
+  padding-left: calc(var(--tree-level, 0) * var(--tree-text-indent));
 }
 
 :deep(.ag-cell.ag-cell-last-left-pinned:not(.ag-cell-range-right):not(.ag-cell-range-single-cell)),
@@ -151,7 +142,3 @@ const gridOptions: GridOptions<TreeRow> = {
   border-right: 1px solid var(--ag-border-color);
 }
 </style>
-
-
-
-

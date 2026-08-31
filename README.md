@@ -28,9 +28,11 @@ npm run preview
 ## Тесты
 
 ```bash
-npm run test:unit
-npm run test:perf
+npm run test:unit   # TreeStore + Vue components
+npm run test:perf   # performance benchmarks
 ```
+
+Покрытие: unit-тесты `TreeStore`, performance-тесты, тесты компонентов `App` и `TreeGrid`.
 
 ## TreeStore API
 

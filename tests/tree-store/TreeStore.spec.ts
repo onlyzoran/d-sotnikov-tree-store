@@ -72,6 +72,8 @@ describe('TreeStore', () => {
         expect(store.getItem(4)).toBeUndefined()
         expect(store.getItem(7)).toBeUndefined()
         expect(store.getAll()).toHaveLength(2)
+        expect(store.getChildren(1).map((item) => item.id)).toEqual([3])
+        expect(store.getChildren('91064cef')).toEqual([])
     })
 
     it('updates existing item', () => {

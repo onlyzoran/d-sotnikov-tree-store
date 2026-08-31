@@ -1,4 +1,4 @@
-import type { TreeItem, TreeItemId } from './types.ts'
+import type { TreeItem, TreeItemId } from './types'
 
 export class TreeStore {
     private items: TreeItem[] = []
@@ -23,12 +23,17 @@ export class TreeStore {
 
     getAllChildren(id: TreeItemId): TreeItem[] {
         const result: TreeItem[] = []
-        const queue = [...this.getChildren(id)]
+        const directChildren = this.getChildren(id)
 
-        while (queue.length > 0) {
-            const item = queue.shift()!
-            result.push(item)
-            queue.push(...this.getChildren(item.id))
+        for (let index = 0; index < directChildren.length; index += 1) {
+            result.push(directChildren[index])
+        }
+
+        for (let index = 0; index < result.length; index += 1) {
+            const nested = this.getChildren(result[index].id)
+            for (let nestedIndex = 0; nestedIndex < nested.length; nestedIndex += 1) {
+                result.push(nested[nestedIndex])
+            }
         }
 
         return result
@@ -53,27 +58,28 @@ export class TreeStore {
 
     addItem(item: TreeItem): void {
         this.items.push(item)
-        this.itemsById.set(item.id, item)
-
-        const parentId = item.parent
-        const siblings = this.childrenByParentId.get(parentId)
-        if (siblings) {
-            siblings.push(item)
-        } else {
-            this.childrenByParentId.set(parentId, [item])
-        }
+        this.indexItem(item)
     }
 
     removeItem(id: TreeItemId): void {
-        const idsToRemove = new Set<TreeItemId>([id, ...this.getAllChildren(id).map((item) => item.id)])
+        const target = this.itemsById.get(id)
+        if (!target) {
+            return
+        }
+
+        const idsToRemove = new Set<TreeItemId>([id])
+        const descendants = this.getAllChildren(id)
+        for (let index = 0; index < descendants.length; index += 1) {
+            idsToRemove.add(descendants[index].id)
+        }
 
         this.items = this.items.filter((item) => !idsToRemove.has(item.id))
+        this.removeChildFromParent(target.parent, target.id)
 
         for (const removeId of idsToRemove) {
             this.itemsById.delete(removeId)
+            this.childrenByParentId.delete(removeId)
         }
-
-        this.rebuildIndexes()
     }
 
     updateItem(item: TreeItem): void {
@@ -82,11 +88,12 @@ export class TreeStore {
             return
         }
 
-        const parentChanged = existing.parent !== item.parent
+        const previousParent = existing.parent
         Object.assign(existing, item)
 
-        if (parentChanged) {
-            this.rebuildIndexes()
+        if (previousParent !== existing.parent) {
+            this.removeChildFromParent(previousParent, existing.id)
+            this.addToParentChildren(existing)
         }
     }
 
@@ -95,15 +102,33 @@ export class TreeStore {
         this.childrenByParentId.clear()
 
         for (const item of this.items) {
-            this.itemsById.set(item.id, item)
+            this.indexItem(item)
+        }
+    }
 
-            const parentId = item.parent
-            const siblings = this.childrenByParentId.get(parentId)
-            if (siblings) {
-                siblings.push(item)
-            } else {
-                this.childrenByParentId.set(parentId, [item])
-            }
+    private indexItem(item: TreeItem): void {
+        this.itemsById.set(item.id, item)
+        this.addToParentChildren(item)
+    }
+
+    private addToParentChildren(item: TreeItem): void {
+        const siblings = this.childrenByParentId.get(item.parent)
+        if (siblings) {
+            siblings.push(item)
+        } else {
+            this.childrenByParentId.set(item.parent, [item])
+        }
+    }
+
+    private removeChildFromParent(parentId: TreeItemId | null, id: TreeItemId): void {
+        const siblings = this.childrenByParentId.get(parentId)
+        if (!siblings) {
+            return
+        }
+
+        const index = siblings.findIndex((sibling) => sibling.id === id)
+        if (index >= 0) {
+            siblings.splice(index, 1)
         }
     }
 }

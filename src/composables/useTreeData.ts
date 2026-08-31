@@ -12,7 +12,7 @@ function delay(ms: number): Promise<void> {
 
 export function useTreeData() {
     const store = shallowRef(new TreeStore())
-    const loading = ref(false)
+    const loading = ref(true)
     const version = ref(0)
 
     const items = computed(() => {

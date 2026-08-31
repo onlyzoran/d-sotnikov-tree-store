@@ -91,20 +91,22 @@ describe('TreeGrid', () => {
         })
 
         const options = gridProps.current?.gridOptions as {
+            theme?: string
             treeData?: boolean
             groupDefaultExpanded?: number
-            columnDefs?: Array<{ headerName?: string }>
+            columnDefs?: Array<{ headerName?: string; pinned?: string }>
             autoGroupColumnDef?: { headerName?: string; field?: string }
             overlayLoadingTemplate?: string
             getDataPath?: (data: TreeRow) => string[]
         }
 
+        expect(options?.theme).toBe('legacy')
         expect(options?.treeData).toBe(true)
         expect(options?.groupDefaultExpanded).toBe(-1)
         expect(options?.getDataPath?.(sampleRows[1])).toEqual(['1', '3'])
-        expect(options?.columnDefs?.map((column) => column.headerName)).toEqual(['№ п/п', 'Категория'])
-        expect(options?.autoGroupColumnDef?.headerName).toBe('Наименование')
-        expect(options?.autoGroupColumnDef?.field).toBe('label')
+        expect(options?.columnDefs?.map((column) => column.headerName)).toEqual(['№ п/п', 'Наименование'])
+        expect(options?.autoGroupColumnDef?.headerName).toBe('Категория')
+        expect(options?.autoGroupColumnDef?.field).toBe('category')
         expect(options?.overlayLoadingTemplate).toContain('Загрузка данных')
     })
 })

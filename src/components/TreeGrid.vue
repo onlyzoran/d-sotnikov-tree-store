@@ -5,6 +5,7 @@ import type { TreeRow } from '../utils/buildRowData'
 
 defineProps<{
   rowData: TreeRow[]
+  loading: boolean
 }>()
 
 const columnDefs: ColDef<TreeRow>[] = [
@@ -36,7 +37,8 @@ const gridOptions: GridOptions<TreeRow> = {
   groupDefaultExpanded: -1,
   animateRows: true,
   columnDefs,
-  autoGroupColumnDef
+  autoGroupColumnDef,
+  overlayLoadingTemplate: '<span class="ag-overlay-loading-center">Загрузка данных...</span>'
 }
 </script>
 
@@ -44,6 +46,7 @@ const gridOptions: GridOptions<TreeRow> = {
   <ag-grid-vue
       class="ag-theme-alpine tree-grid"
       :row-data="rowData"
+      :loading="loading"
       :grid-options="gridOptions"
   />
 </template>

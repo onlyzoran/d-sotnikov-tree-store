@@ -3,7 +3,7 @@ import { onMounted } from 'vue'
 import TreeGrid from './components/TreeGrid.vue'
 import { useTreeData } from './composables/useTreeData'
 
-const { loading, items, rowData, loadItems } = useTreeData()
+const { loading, rowData, loadItems } = useTreeData()
 
 onMounted(() => {
   void loadItems()
@@ -13,9 +13,7 @@ onMounted(() => {
 <template>
   <main class="app">
     <h1>Tree Store</h1>
-    <p v-if="loading">Загрузка данных...</p>
-    <p v-else>Загружено элементов: {{ items.length }}</p>
-    <TreeGrid :row-data="rowData" />
+    <TreeGrid :row-data="rowData" :loading="loading" />
   </main>
 </template>
 
